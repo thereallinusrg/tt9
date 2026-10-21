@@ -178,7 +178,7 @@ public class Text extends TextTools {
 	}
 
 
-	private boolean isCapitalized() {
+	public boolean isCapitalized() { // fork: public for auto-adding words
 		if (text == null || text.length() < 2) {
 			return false;
 		}
