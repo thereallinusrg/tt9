@@ -161,6 +161,7 @@ android {
 		applicationId = 'io.github.thereallinusrg.tt9' // fork: differs from upstream, so both can be installed side by side
 		resValue 'string', 'application_id', applicationId
 		buildFeatures.buildConfig = true
+		buildFeatures.resValues = true
 		minSdk = 24
 		targetSdk = 37
 		versionCode = getVerCode()
