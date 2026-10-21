@@ -1,0 +1,47 @@
+name: Release (fork)
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout project sources
+      uses: actions/checkout@v5
+      with:
+        fetch-depth: 0 # versionCode is the commit count
+    - name: Fetch upstream version tags # versionName is derived from them
+      run: git fetch --no-tags https://github.com/sspanak/tt9.git 'refs/tags/v*:refs/tags/v*'
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: 21
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v3
+
+    - name: Build signed 'Full' APK
+      env:
+        SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+        SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      run: |
+        export SIGNING_KEYSTORE_FILE="$RUNNER_TEMP/release.jks"
+        echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > "$SIGNING_KEYSTORE_FILE"
+        ./gradlew assembleFullRelease
+
+    - name: Publish GitHub release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        apk=$(ls app/build/outputs/apk/full/release/*.apk)
+        version=$(basename "$apk" | sed -E 's/^tt9-v(.*)-full\.apk$/\1/')
+        gh release create "fork-$version" "$apk" --target "$GITHUB_SHA" --title "$version" --notes "Built from $GITHUB_SHA"
