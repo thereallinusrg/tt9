@@ -373,7 +373,7 @@ public abstract class TypingHandler extends KeyPadHandler {
 			}
 		}
 
-		if (mInputMode.shouldAddTrailingSpace(previousChars, nextChars, isWordAcceptedManually, nextKey)) {
+		if (mInputMode.shouldAddTrailingSpace(currentWord, previousChars, nextChars, isWordAcceptedManually, nextKey)) {
 			textField.setText(" ");
 			previousChars += " ";
 		}
